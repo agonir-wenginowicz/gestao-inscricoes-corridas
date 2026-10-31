@@ -2,9 +2,45 @@ body {
     background-color: #f5f7fa;
     color: #243247;
     font-family: Arial, sans-serif;
+    min-height: 100vh;
+}
+
+.site-header {
+    background-color: #172b4d;
+}
+
+.brand {
+    color: #ffffff;
+    font-size: 1.25rem;
+    font-weight: bold;
+    text-decoration: none;
 }
 
 h1 {
     font-weight: 700;
-    margin-bottom: 20px;
+    color: #172b4d;
+}
+
+.race-card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.07);
+}
+
+.race-card .card-body {
+    padding: 24px;
+}
+
+.empty-state {
+    background-color: #ffffff;
+    border-radius: 12px;
+    padding: 32px;
+    text-align: center;
+}
+
+.site-footer {
+    margin-top: 50px;
+    background-color: #e9edf3;
+    color: #536174;
+    text-align: center;
 }

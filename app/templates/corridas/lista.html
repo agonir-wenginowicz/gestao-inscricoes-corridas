@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block title %}
+Corridas disponíveis | Corridas da Comunidade
+{% endblock %}
+
+{% block content %}
+
+<section class="mb-4">
+    <h1>Corridas disponíveis</h1>
+
+    <p class="text-secondary">
+        Confira os próximos eventos e participe das
+        corridas comunitárias.
+    </p>
+</section>
+
+{% if corridas %}
+
+    <div class="row g-4">
+
+        {% for corrida in corridas %}
+
+            <div class="col-12 col-md-6 col-lg-4">
+
+                <article class="card race-card h-100">
+
+                    <div class="card-body">
+
+                        <span class="badge text-bg-success mb-3">
+                            Inscrições abertas
+                        </span>
+
+                        <h2 class="h5 card-title">
+                            {{ corrida.nome }}
+                        </h2>
+
+                        <p>
+                            <strong>Data:</strong>
+                            {{ corrida.data.strftime('%d/%m/%Y') }}
+                        </p>
+
+                        <p>
+                            <strong>Horário:</strong>
+                            {{ corrida.horario.strftime('%H:%M') }}
+                        </p>
+
+                        <p>
+                            <strong>Local:</strong>
+                            {{ corrida.local }}
+                        </p>
+
+                        {% if corrida.descricao %}
+                            <p class="text-secondary">
+                                {{ corrida.descricao }}
+                            </p>
+                        {% endif %}
+
+                        <button
+                            type="button"
+                            class="btn btn-primary w-100"
+                            disabled
+                            aria-describedby="future-registration"
+                        >
+                            Inscrição em breve
+                        </button>
+
+                        <small
+                            id="future-registration"
+                            class="text-secondary d-block mt-2"
+                        >
+                            A funcionalidade de inscrição será
+                            implementada na próxima etapa.
+                        </small>
+
+                    </div>
+
+                </article>
+
+            </div>
+
+        {% endfor %}
+
+    </div>
+
+{% else %}
+
+    <div class="empty-state">
+        <h2 class="h5">Nenhuma corrida disponível</h2>
+
+        <p>
+            Ainda não existem corridas com inscrições abertas.
+            Volte em breve para conferir os próximos eventos.
+        </p>
+    </div>
+
+{% endif %}
+
+{% endblock %}
