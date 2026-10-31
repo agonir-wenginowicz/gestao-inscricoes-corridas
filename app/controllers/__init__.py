@@ -1,21 +1,49 @@
 import re
+from urllib import request
 
 from flask import (
     Blueprint,
     render_template,
     redirect,
     url_for,
-    flash
-)
+    flash,
+    current_app,
+    request
+    )
 
 from sqlalchemy.exc import IntegrityError
-
+from datetime import date, time
 from app.extensions import db
-from app.models import Corrida, Inscricao
-from app.forms import InscricaoForm
+from app.models import Corrida, Inscricao, Organizador
+from app.forms import InscricaoForm, LoginForm, CorridaForm
+
+from functools import wraps
+from flask import session, current_app
 
 
 main = Blueprint("main", __name__)
+
+
+def organizador_required(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        if "organizador_id" not in session:
+            flash("Faça login para acessar a área administrativa.", "warning")
+            return redirect(url_for("main.login"))
+
+        organizador = db.session.get(
+            Organizador,
+            session["organizador_id"]
+        )
+
+        if organizador is None:
+            session.clear()
+            flash("Sessão inválida. Faça login novamente.", "warning")
+            return redirect(url_for("main.login"))
+
+        return func(*args, **kwargs)
+
+    return wrapper
 
 
 def normalizar_contato(contato):
@@ -167,7 +195,7 @@ def inscrever(corrida_id):
         except Exception:
             db.session.rollback()
 
-            main.logger.exception(
+            current_app.logger.exception(
                 "Erro ao registrar inscrição."
             )
 
@@ -194,4 +222,209 @@ def inscrever(corrida_id):
         "corridas/inscrever.html",
         corrida=corrida,
         form=form
+    )
+@main.route("/organizador/login", methods=["GET", "POST"])
+def login():
+    if "organizador_id" in session:
+        return redirect(url_for("main.painel"))
+
+    form = LoginForm()
+
+    if form.validate_on_submit():
+        usuario = form.usuario.data.strip()
+
+        organizador = Organizador.query.filter_by(
+            usuario=usuario
+        ).first()
+
+        if organizador and organizador.verificar_senha(form.senha.data):
+            session.clear()
+            session["organizador_id"] = organizador.id
+            session.permanent = True
+
+            flash("Login realizado com sucesso!", "success")
+            return redirect(url_for("main.painel"))
+
+        flash("Usuário ou senha inválidos.", "error")
+
+    return render_template("organizador/login.html", form=form)
+
+
+@main.route("/organizador")
+@organizador_required
+def painel():
+    organizador = db.session.get(
+        Organizador,
+        session["organizador_id"]
+    )
+
+    return render_template(
+        "organizador/painel.html",
+        organizador=organizador
+    )
+
+
+@main.route("/organizador/logout", methods=["POST"])
+@organizador_required
+def logout():
+    session.clear()
+    flash("Você saiu da área administrativa.", "success")
+    return redirect(url_for("main.login"))
+
+@main.route("/organizador/corridas")
+@organizador_required
+def listar_corridas():
+    corridas = Corrida.query.order_by(
+        Corrida.data.desc(),
+        Corrida.horario.desc()
+    ).all()
+
+    return render_template(
+        "organizador/corridas.html",
+        corridas=corridas
+    )
+
+@main.route(
+    "/organizador/corridas/nova",
+    methods=["GET", "POST"]
+)
+@organizador_required
+def nova_corrida():
+    form = CorridaForm()
+
+    if form.validate_on_submit():
+        nova = Corrida(
+            nome=form.nome.data.strip(),
+            data=form.data_corrida.data,
+            horario=form.horario.data,
+            local=form.local.data.strip(),
+            descricao=form.descricao.data.strip() if form.descricao.data else "",
+            status="aberta"
+        )
+
+        if nova.data < date.today():
+            flash("A data da corrida não pode estar no passado.", "error")
+            return render_template(
+                "organizador/form_corrida.html",
+                form=form,
+                titulo="Cadastrar corrida"
+            )
+
+        db.session.add(nova)
+        db.session.commit()
+
+        flash("Corrida cadastrada com sucesso!", "success")
+        return redirect(url_for("main.listar_corridas"))
+
+    return render_template(
+        "organizador/form_corrida.html",
+        form=form,
+        titulo="Cadastrar corrida"
+    )
+
+@main.route(
+    "/organizador/corridas/<int:corrida_id>/editar",
+    methods=["GET", "POST"]
+)
+@organizador_required
+def editar_corrida(corrida_id):
+    corrida = db.session.get(Corrida, corrida_id)
+
+    if corrida is None:
+        flash("Corrida não encontrada.", "error")
+        return redirect(url_for("main.listar_corridas"))
+
+    form = CorridaForm()
+    if request.method == "GET":
+        form.nome.data = corrida.nome
+        form.data_corrida.data = corrida.data
+        form.horario.data = corrida.horario
+        form.local.data = corrida.local
+        form.descricao.data = corrida.descricao
+
+    if form.validate_on_submit():
+        if form.data_corrida.data < date.today():
+            flash("A data da corrida não pode estar no passado.", "error")
+            return render_template(
+                "organizador/form_corrida.html",
+                form=form,
+                titulo="Editar corrida"
+            )
+
+        corrida.nome = form.nome.data.strip()
+        corrida.data = form.data_corrida.data
+        corrida.horario = form.horario.data
+        corrida.local = form.local.data.strip()
+        corrida.descricao = (
+            form.descricao.data.strip()
+            if form.descricao.data
+            else ""
+        )
+
+        db.session.commit()
+
+        flash("Corrida atualizada com sucesso!", "success")
+        return redirect(url_for("main.listar_corridas"))
+
+    return render_template(
+        "organizador/form_corrida.html",
+        form=form,
+        titulo="Editar corrida"
+    )
+
+
+@main.route(
+    "/organizador/corridas/<int:corrida_id>/alternar-status",
+    methods=["POST"]
+)
+@organizador_required
+def alternar_status_corrida(corrida_id):
+    corrida = db.session.get(Corrida, corrida_id)
+
+    if corrida is None:
+        flash("Corrida não encontrada.", "error")
+        return redirect(url_for("main.listar_corridas"))
+
+    if corrida.status == "aberta":
+        corrida.status = "encerrada"
+        flash("Inscrições encerradas.", "success")
+
+    else:
+        if corrida.data < date.today():
+            flash(
+                "Não é possível reabrir inscrições de uma corrida passada.",
+                "warning"
+            )
+            return redirect(url_for("main.listar_corridas"))
+
+        corrida.status = "aberta"
+        flash("Inscrições reabertas.", "success")
+
+    db.session.commit()
+
+    return redirect(url_for("main.listar_corridas"))
+
+@main.route("/organizador/corridas/<int:corrida_id>/inscritos")
+@organizador_required
+def listar_inscritos(corrida_id):
+    corrida = db.session.get(Corrida, corrida_id)
+
+    if corrida is None:
+        flash("Corrida não encontrada.", "error")
+        return redirect(url_for("main.listar_corridas"))
+
+    inscritos = (
+        Inscricao.query
+        .filter_by(corrida_id=corrida.id)
+        .order_by(Inscricao.data_inscricao.desc())
+        .all()
+    )
+
+    total_inscritos = len(inscritos)
+
+    return render_template(
+        "organizador/inscritos.html",
+        corrida=corrida,
+        inscritos=inscritos,
+        total_inscritos=total_inscritos
     )

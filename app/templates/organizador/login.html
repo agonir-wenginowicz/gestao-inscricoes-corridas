@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="row justify-content-center">
+    <div class="col-md-5">
+
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+
+                <h2 class="text-center mb-4">
+                    Acesso do Organizador
+                </h2>
+
+                {% with mensagens = get_flashed_messages(with_categories=true) %}
+                    {% for categoria, mensagem in mensagens %}
+                        <div class="alert alert-warning" role="alert">
+                            {{ mensagem }}
+                        </div>
+                    {% endfor %}
+                {% endwith %}
+
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+
+                    <div class="mb-3">
+                        {{ form.usuario.label(class="form-label") }}
+                        {{ form.usuario(class="form-control", autocomplete="username") }}
+
+                        {% for erro in form.usuario.errors %}
+                            <div class="text-danger">{{ erro }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form.senha.label(class="form-label") }}
+                        {{ form.senha(class="form-control", autocomplete="current-password") }}
+
+                        {% for erro in form.senha.errors %}
+                            <div class="text-danger">{{ erro }}</div>
+                        {% endfor %}
+                    </div>
+
+                    {{ form.submit(class="btn btn-primary w-100") }}
+                </form>
+
+                <div class="text-center mt-3">
+                    <a href="{{ url_for('main.index') }}">
+                        Voltar às corridas
+                    </a>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

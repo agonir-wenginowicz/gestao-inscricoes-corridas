@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+
+                <h2 class="mb-4">{{ titulo }}</h2>
+
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+
+                    <div class="mb-3">
+                        {{ form.nome.label(class="form-label") }}
+                        {{ form.nome(class="form-control", placeholder="Ex.: Corrida da Comunidade") }}
+
+                        {% for erro in form.nome.errors %}
+                            <div class="text-danger">{{ erro }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form.data_corrida.label(class="form-label") }}
+                            {{ form.data_corrida(class="form-control", type="date") }}
+
+                            {% for erro in form.data_corrida.errors %}
+                                <div class="text-danger">{{ erro }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            {{ form.horario.label(class="form-label") }}
+                            {{ form.horario(class="form-control", type="time") }}
+
+                            {% for erro in form.horario.errors %}
+                                <div class="text-danger">{{ erro }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form.local.label(class="form-label") }}
+                        {{ form.local(class="form-control", placeholder="Informe o local de largada") }}
+
+                        {% for erro in form.local.errors %}
+                            <div class="text-danger">{{ erro }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form.descricao.label(class="form-label") }}
+                        {{ form.descricao(class="form-control", rows="4", placeholder="Informações adicionais sobre a corrida") }}
+
+                        {% for erro in form.descricao.errors %}
+                            <div class="text-danger">{{ erro }}</div>
+                        {% endfor %}
+                    </div>
+
+                    {{ form.submit(class="btn btn-primary") }}
+
+                    <a
+                        href="{{ url_for('main.listar_corridas') }}"
+                        class="btn btn-outline-secondary"
+                    >
+                        Cancelar
+                    </a>
+
+                </form>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+        <h2>Gerenciamento de corridas</h2>
+        <p class="text-muted mb-0">
+            Consulte e gerencie os eventos cadastrados.
+        </p>
+    </div>
+
+    <a
+        href="{{ url_for('main.nova_corrida') }}"
+        class="btn btn-primary"
+    >
+        + Nova corrida
+    </a>
+</div>
+
+{% with mensagens = get_flashed_messages(with_categories=true) %}
+    {% for categoria, mensagem in mensagens %}
+        <div
+            class="alert
+            {% if categoria == 'success' %}
+                alert-success
+            {% elif categoria == 'warning' %}
+                alert-warning
+            {% else %}
+                alert-danger
+            {% endif %}"
+            role="alert"
+        >
+            {{ mensagem }}
+        </div>
+    {% endfor %}
+{% endwith %}
+
+{% if corridas %}
+
+    <div class="table-responsive">
+        <table class="table table-striped table-hover align-middle">
+
+            <thead>
+                <tr>
+                    <th>Corrida</th>
+                    <th>Data</th>
+                    <th>Horário</th>
+                    <th>Local</th>
+                    <th>Inscritos</th>
+                    <th>Status</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for corrida in corridas %}
+                    <tr>
+                        <td>{{ corrida.nome }}</td>
+
+                        <td>{{ corrida.data.strftime("%d/%m/%Y") }}</td>
+
+                        <td>{{ corrida.horario.strftime("%H:%M") }}</td>
+
+                        <td>{{ corrida.local }}</td>
+
+                        <td>{{ corrida.inscricoes|length }}</td>
+
+                        <td>
+                            {% if corrida.status == "aberta" %}
+                                <span class="badge bg-success">
+                                    Aberta
+                                </span>
+                            {% else %}
+                                <span class="badge bg-secondary">
+                                    Encerrada
+                                </span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            <div class="d-flex gap-2 flex-wrap">
+
+                                <a
+                                    href="{{ url_for('main.editar_corrida', corrida_id=corrida.id) }}"
+                                    class="btn btn-sm btn-outline-primary"
+                                >
+                                    Editar
+                                </a>
+
+
+
+                                <a
+                                    href="{{ url_for('main.listar_inscritos', corrida_id=corrida.id) }}"
+                                    class="btn btn-sm btn-outline-info"
+                                >
+                                    Inscritos
+                                </a>
+
+                                <form
+                                    method="POST"
+                                    action="{{ url_for('main.alternar_status_corrida', corrida_id=corrida.id) }}"
+                                >
+                                    <input
+                                        type="hidden"
+                                        name="csrf_token"
+                                        value="{{ csrf_token() }}"
+                                    >
+
+                                    <button
+                                        type="submit"
+                                        class="btn btn-sm
+                                        {% if corrida.status == 'aberta' %}
+                                            btn-outline-danger
+                                        {% else %}
+                                            btn-outline-success
+                                        {% endif %}"
+                                    >
+                                        {% if corrida.status == "aberta" %}
+                                            Encerrar
+                                        {% else %}
+                                            Reabrir
+                                        {% endif %}
+                                    </button>
+                                </form>
+
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+
+        </table>
+    </div>
+
+{% else %}
+
+    <div class="alert alert-info" role="status">
+        Nenhuma corrida cadastrada até o momento.
+    </div>
+
+{% endif %}
+
+<a
+    href="{{ url_for('main.painel') }}"
+    class="btn btn-outline-secondary mt-3"
+>
+    Voltar ao painel
+</a>
+
+{% endblock %}

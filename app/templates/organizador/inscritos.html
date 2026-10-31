@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+        <h2>Participantes inscritos</h2>
+        <p class="text-muted mb-0">
+            {{ corrida.nome }}
+        </p>
+    </div>
+
+    <a
+        href="{{ url_for('main.listar_corridas') }}"
+        class="btn btn-outline-secondary"
+    >
+        Voltar às corridas
+    </a>
+</div>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <div class="row">
+
+            <div class="col-md-4">
+                <strong>Data:</strong>
+                <p>{{ corrida.data.strftime("%d/%m/%Y") }}</p>
+            </div>
+
+            <div class="col-md-4">
+                <strong>Horário:</strong>
+                <p>{{ corrida.horario.strftime("%H:%M") }}</p>
+            </div>
+
+            <div class="col-md-4">
+                <strong>Local:</strong>
+                <p>{{ corrida.local }}</p>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <h5 class="card-title">Total de participantes</h5>
+
+        <p class="display-5 fw-bold text-primary mb-0">
+            {{ total_inscritos }}
+        </p>
+
+        <small class="text-muted">
+            Inscrição(ões) registrada(s) nesta corrida.
+        </small>
+    </div>
+</div>
+
+{% if inscritos %}
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+
+            <h5 class="card-title mb-3">
+                Relação de inscritos
+            </h5>
+
+            <div class="table-responsive">
+                <table class="table table-striped table-hover align-middle">
+
+                    <thead>
+                        <tr>
+                            <th>Nº</th>
+                            <th>Nome do participante</th>
+                            <th>Contato</th>
+                            <th>Data da inscrição</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for inscricao in inscritos %}
+                            <tr>
+                                <td>{{ loop.index }}</td>
+
+                                <td>
+                                    {{ inscricao.nome_participante }}
+                                </td>
+
+                                <td>
+                                    {{ inscricao.contato }}
+                                </td>
+
+                                <td>
+                                    {{ inscricao.data_inscricao.strftime("%d/%m/%Y %H:%M") }}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+
+                </table>
+            </div>
+
+        </div>
+    </div>
+
+{% else %}
+
+    <div class="alert alert-info" role="status">
+        Ainda não existem participantes inscritos nesta corrida.
+    </div>
+
+{% endif %}
+
+{% endblock %}
