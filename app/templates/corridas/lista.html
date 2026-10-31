@@ -5,6 +5,25 @@ Corridas disponíveis | Corridas da Comunidade
 {% endblock %}
 
 {% block content %}
+{% with mensagens = get_flashed_messages(with_categories=true) %}
+    {% if mensagens %}
+        {% for categoria, mensagem in mensagens %}
+            <div
+                class="alert
+                {% if categoria == 'success' %}
+                    alert-success
+                {% elif categoria == 'warning' %}
+                    alert-warning
+                {% else %}
+                    alert-danger
+                {% endif %}"
+                role="alert"
+            >
+                {{ mensagem }}
+            </div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
 
 <section class="mb-4">
     <h1>Corridas disponíveis</h1>
@@ -56,14 +75,12 @@ Corridas disponíveis | Corridas da Comunidade
                             </p>
                         {% endif %}
 
-                        <button
-                            type="button"
+                        <a
+                            href="{{ url_for('main.inscrever', corrida_id=corrida.id) }}"
                             class="btn btn-primary w-100"
-                            disabled
-                            aria-describedby="future-registration"
-                        >
-                            Inscrição em breve
-                        </button>
+                            >
+                            Ver detalhes e inscrever-se
+                        </a>
 
                         <small
                             id="future-registration"

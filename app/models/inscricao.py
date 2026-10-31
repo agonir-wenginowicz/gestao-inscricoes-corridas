@@ -21,8 +21,8 @@ class Inscricao(db.Model):
     )
 
     contato = db.Column(
-        db.String(30),
-        nullable=True
+        db.String(120),
+        nullable=False
     )
 
     data_inscricao = db.Column(
@@ -34,4 +34,12 @@ class Inscricao(db.Model):
     corrida = db.relationship(
         "Corrida",
         back_populates="inscricoes"
+    )
+
+    __table_args__ = (
+        db.UniqueConstraint(
+            "corrida_id",
+            "contato",
+            name="uq_corrida_contato"
+        ),
     )

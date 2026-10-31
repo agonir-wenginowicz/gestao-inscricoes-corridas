@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block title %}
+Inscrição | Corridas da Comunidade
+{% endblock %}
+
+{% block content %}
+
+<div class="row justify-content-center">
+
+    <div class="col-12 col-md-8 col-lg-6">
+
+        <section class="card race-card">
+
+            <div class="card-body">
+
+                <h1 class="h3 mb-3">
+                    Inscrição na corrida
+                </h1>
+
+                <div class="event-summary mb-4">
+
+                    <h2 class="h5">
+                        {{ corrida.nome }}
+                    </h2>
+
+                    <p>
+                        <strong>Data:</strong>
+                        {{ corrida.data.strftime('%d/%m/%Y') }}
+                    </p>
+
+                    <p>
+                        <strong>Horário:</strong>
+                        {{ corrida.horario.strftime('%H:%M') }}
+                    </p>
+
+                    <p>
+                        <strong>Local:</strong>
+                        {{ corrida.local }}
+                    </p>
+
+                </div>
+
+                {% with mensagens = get_flashed_messages(with_categories=true) %}
+                    {% if mensagens %}
+                        {% for categoria, mensagem in mensagens %}
+                            <div
+                                class="alert
+                                {% if categoria == 'success' %}
+                                    alert-success
+                                {% elif categoria == 'warning' %}
+                                    alert-warning
+                                {% else %}
+                                    alert-danger
+                                {% endif %}"
+                                role="alert"
+                            >
+                                {{ mensagem }}
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                <form method="POST">
+
+                    {{ form.hidden_tag() }}
+
+                    <div class="mb-3">
+
+                        {{ form.nome_participante.label(
+                            class="form-label"
+                        ) }}
+
+                        {{ form.nome_participante(
+                            class="form-control",
+                            placeholder="Digite seu nome completo",
+                            autocomplete="name"
+                        ) }}
+
+                        {% for erro in form.nome_participante.errors %}
+                            <div class="text-danger small mt-1">
+                                {{ erro }}
+                            </div>
+                        {% endfor %}
+
+                    </div>
+
+                    <div class="mb-4">
+
+                        {{ form.contato.label(
+                            class="form-label"
+                        ) }}
+
+                        {{ form.contato(
+                            class="form-control",
+                            placeholder="Telefone ou e-mail",
+                            autocomplete="email"
+                        ) }}
+
+                        <small class="text-secondary">
+                            O contato será utilizado para identificar
+                            sua inscrição nesta corrida.
+                        </small>
+
+                        {% for erro in form.contato.errors %}
+                            <div class="text-danger small mt-1">
+                                {{ erro }}
+                            </div>
+                        {% endfor %}
+
+                    </div>
+
+                    {{ form.submit(
+                        class="btn btn-primary w-100"
+                    ) }}
+
+                    <a
+                        href="{{ url_for('main.index') }}"
+                        class="btn btn-outline-secondary w-100 mt-2"
+                    >
+                        Voltar às corridas
+                    </a>
+
+                </form>
+
+            </div>
+
+        </section>
+
+    </div>
+
+</div>
+
+{% endblock %}
