@@ -218,3 +218,12 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+# Bancos de dados SQLite
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+backup_banco.py
+inspecionar_banco.py
+migrar_banco.py
+verificar_integridade.py

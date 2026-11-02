@@ -4,6 +4,13 @@ from app.extensions import db
 class Corrida(db.Model):
     __tablename__ = "corridas"
 
+    __table_args__ = (
+        db.CheckConstraint(
+            "status IN ('aberta', 'encerrada')",
+            name="ck_corrida_status"
+        ),
+    )
+
     id = db.Column(db.Integer, primary_key=True)
 
     nome = db.Column(

@@ -18,41 +18,70 @@
     </form>
 </div>
 
-<div class="row g-3">
+<div class="row g-3 mb-4">
 
-    <div class="col-md-6">
+    <div class="col-md-3 col-sm-6">
         <div class="card shadow-sm h-100">
             <div class="card-body">
-                <h5 class="card-title">Gerenciar corridas</h5>
-
-                <p class="card-text">
-                    Cadastrar, editar e acompanhar as corridas da comunidade.
+                <h6 class="text-muted">Total de corridas</h6>
+                <p class="display-5 fw-bold mb-0">
+                    {{ total_corridas }}
                 </p>
-
-                <a
-                    href="{{ url_for('main.listar_corridas') }}"
-                    class="btn btn-primary"
-                >
-                    Acessar corridas
-                </a>
             </div>
         </div>
     </div>
 
-    <div class="col-md-6">
+    <div class="col-md-3 col-sm-6">
         <div class="card shadow-sm h-100">
             <div class="card-body">
-                <h5 class="card-title">Participantes inscritos</h5>
-                <p class="card-text">
-                    Consultar as inscrições e os dados dos participantes.
+                <h6 class="text-muted">Inscrições abertas</h6>
+                <p class="display-5 fw-bold text-success mb-0">
+                    {{ corridas_abertas }}
                 </p>
-                <span class="badge bg-secondary">
-                    Próxima etapa
-                </span>
             </div>
         </div>
     </div>
 
+    <div class="col-md-3 col-sm-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <h6 class="text-muted">Corridas encerradas</h6>
+                <p class="display-5 fw-bold text-secondary mb-0">
+                    {{ corridas_encerradas }}
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 col-sm-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <h6 class="text-muted">Total de inscrições</h6>
+                <p class="display-5 fw-bold text-primary mb-0">
+                    {{ total_inscricoes }}
+                </p>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <h5>Gerenciamento de corridas</h5>
+
+        <p class="text-muted">
+            Cadastre, consulte e edite corridas e acompanhe
+            os participantes inscritos.
+        </p>
+
+        <a
+            href="{{ url_for('main.listar_corridas') }}"
+            class="btn btn-primary"
+        >
+            Acessar corridas
+        </a>
+    </div>
 </div>
 
 {% endblock %}

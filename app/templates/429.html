@@ -1,0 +1,27 @@
+
+{% extends "base.html" %}
+
+{% block title %}Muitas tentativas{% endblock %}
+
+{% block content %}
+
+<div class="container text-center py-5">
+
+    <h1>429 - Muitas solicitações</h1>
+
+    <p>
+        Você realizou muitas tentativas em pouco tempo.
+    </p>
+
+    <p>
+        Aguarde um minuto antes de tentar novamente.
+    </p>
+
+    <a href="{{ url_for('main.login') }}"
+       class="btn btn-primary">
+        Voltar ao login
+    </a>
+
+</div>
+
+{% endblock %}

@@ -1,5 +1,10 @@
+
 import re
-from urllib import request
+import csv
+import io
+
+from datetime import date
+from functools import wraps
 
 from flask import (
     Blueprint,
@@ -8,17 +13,19 @@ from flask import (
     url_for,
     flash,
     current_app,
-    request
-    )
+    request,
+    make_response,
+    session
+)
 
 from sqlalchemy.exc import IntegrityError
-from datetime import date, time
-from app.extensions import db
+
+from app.extensions import (
+    db,
+    limiter
+)
 from app.models import Corrida, Inscricao, Organizador
 from app.forms import InscricaoForm, LoginForm, CorridaForm
-
-from functools import wraps
-from flask import session, current_app
 
 
 main = Blueprint("main", __name__)
@@ -224,6 +231,7 @@ def inscrever(corrida_id):
         form=form
     )
 @main.route("/organizador/login", methods=["GET", "POST"])
+@limiter.limit( "5 per minute")
 def login():
     if "organizador_id" in session:
         return redirect(url_for("main.painel"))
@@ -258,9 +266,25 @@ def painel():
         session["organizador_id"]
     )
 
+    total_corridas = Corrida.query.count()
+
+    corridas_abertas = Corrida.query.filter_by(
+        status="aberta"
+    ).count()
+
+    corridas_encerradas = Corrida.query.filter_by(
+        status="encerrada"
+    ).count()
+
+    total_inscricoes = Inscricao.query.count()
+
     return render_template(
         "organizador/painel.html",
-        organizador=organizador
+        organizador=organizador,
+        total_corridas=total_corridas,
+        corridas_abertas=corridas_abertas,
+        corridas_encerradas=corridas_encerradas,
+        total_inscricoes=total_inscricoes
     )
 
 
@@ -428,3 +452,68 @@ def listar_inscritos(corrida_id):
         inscritos=inscritos,
         total_inscritos=total_inscritos
     )
+
+@main.route(
+    "/organizador/corridas/<int:corrida_id>/exportar-csv"
+)
+@organizador_required
+def exportar_inscritos_csv(corrida_id):
+    corrida = db.session.get(Corrida, corrida_id)
+
+    if corrida is None:
+        flash("Corrida não encontrada.", "error")
+        return redirect(url_for("main.listar_corridas"))
+
+    inscritos = (
+        Inscricao.query
+        .filter_by(corrida_id=corrida.id)
+        .order_by(Inscricao.nome_participante.asc())
+        .all()
+    )
+
+    def proteger_celula(valor):
+        texto = str(valor or "")
+
+        # Evita que conteúdo seja interpretado como fórmula
+        # por programas de planilha.
+        if texto.lstrip().startswith(("=", "+", "-", "@")):
+            return "'" + texto
+
+        return texto
+
+    arquivo = io.StringIO(newline="")
+
+    escritor = csv.writer(
+        arquivo,
+        delimiter=";",
+        quoting=csv.QUOTE_MINIMAL
+    )
+
+    escritor.writerow([
+        "Número",
+        "Nome do participante",
+        "Contato",
+        "Data da inscrição"
+    ])
+
+    for numero, inscricao in enumerate(inscritos, start=1):
+        escritor.writerow([
+            numero,
+            proteger_celula(inscricao.nome_participante),
+            proteger_celula(inscricao.contato),
+            inscricao.data_inscricao.strftime("%d/%m/%Y %H:%M")
+        ])
+
+    conteudo = "\ufeff" + arquivo.getvalue()
+
+    resposta = make_response(conteudo)
+
+    resposta.headers["Content-Type"] = (
+        "text/csv; charset=utf-8"
+    )
+
+    resposta.headers["Content-Disposition"] = (
+        f'attachment; filename="inscritos_corrida_{corrida.id}.csv"'
+    )
+
+    return resposta
