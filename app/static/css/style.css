@@ -1,3 +1,4 @@
+
 body {
     background-color: #f5f7fa;
     color: #243247;
@@ -43,4 +44,49 @@ h1 {
     background-color: #e9edf3;
     color: #536174;
     text-align: center;
+}
+
+/* Controles de acessibilidade */
+
+.accessibility-controls {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.accessibility-label {
+    color: #ffffff;
+    font-size: 0.9rem;
+}
+
+.accessibility-button {
+    min-width: 42px;
+    min-height: 42px;
+    padding: 6px 10px;
+    border: 2px solid #ffffff;
+    border-radius: 6px;
+    background-color: #ffffff;
+    color: #172b4d;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.accessibility-button:hover {
+    background-color: #dce6f5;
+}
+
+.accessibility-button:focus-visible,
+.brand:focus-visible {
+    outline: 3px solid #ffdd57;
+    outline-offset: 4px;
+}
+
+/* Melhor adaptação em telas pequenas */
+
+@media (max-width: 480px) {
+    .accessibility-controls {
+        width: 100%;
+    }
 }
